@@ -1,9 +1,11 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
+import { ControllerMunicipio } from "../../municipio/controller/controllermunicipio";
 
 const rotaDeMunicipio = Router();
+const controllerMunicipio = new ControllerMunicipio();
 
-rotaDeMunicipio.get("/", (req: Request, res: Response) => {
-  return res.status(200).json({ mensagem: "municipio" });
-});
+rotaDeMunicipio.post("/", controllerMunicipio.cadastrar);
+rotaDeMunicipio.get("/", controllerMunicipio.buscar);
+rotaDeMunicipio.put("/", controllerMunicipio.atualizar);
 
 export { rotaDeMunicipio };

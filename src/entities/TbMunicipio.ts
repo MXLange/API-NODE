@@ -29,7 +29,7 @@ export class TbMunicipio {
   @OneToMany(() => TbBairro, (tbBairro) => tbBairro.codigoMunicipio)
   tbBairros: TbBairro[];
 
-  @ManyToOne(() => TbUf, (tbUf) => tbUf.tbMunicipios, { onDelete: "CASCADE" })
+  @ManyToOne(() => TbUf, (tbUf) => tbUf.tbMunicipios)
   @JoinColumn([{ name: "CODIGO_UF", referencedColumnName: "codigoUf" }])
   codigoUf: TbUf;
 }

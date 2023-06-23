@@ -1,0 +1,1 @@
+npx typeorm-model-generator -h localhost -p 1521 -u C##NODE -x node -e oracle

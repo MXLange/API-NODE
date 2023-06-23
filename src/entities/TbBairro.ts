@@ -26,9 +26,7 @@ export class TbBairro {
   @Column("number", { name: "STATUS", nullable: true, precision: 3, scale: 0 })
   status: number | null;
 
-  @ManyToOne(() => TbMunicipio, (tbMunicipio) => tbMunicipio.tbBairros, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => TbMunicipio, (tbMunicipio) => tbMunicipio.tbBairros)
   @JoinColumn([
     { name: "CODIGO_MUNICIPIO", referencedColumnName: "codigoMunicipio" },
   ])

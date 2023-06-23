@@ -1,6 +1,5 @@
-import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany } from "typeorm";
 import { TbMunicipio } from "./TbMunicipio";
-import { NextVal } from "typeorm-sequence";
 
 @Index("TB_UF_PK", ["codigoUf"], { unique: true })
 @Entity("TB_UF")
@@ -11,7 +10,6 @@ export class TbUf {
     precision: 9,
     scale: 0,
   })
-  @NextVal("SEQUENCE_UF")
   codigoUf: number;
 
   @Column("varchar2", { name: "SIGLA", length: 3 })

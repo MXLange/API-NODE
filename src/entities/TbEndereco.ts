@@ -25,15 +25,11 @@ export class TbEndereco {
   @Column("varchar2", { name: "CEP", length: 10 })
   cep: string;
 
-  @ManyToOne(() => TbPessoa, (tbPessoa) => tbPessoa.tbEnderecos, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => TbPessoa, (tbPessoa) => tbPessoa.tbEnderecos)
   @JoinColumn([{ name: "CODIGO_PESSOA", referencedColumnName: "codigoPessoa" }])
   codigoPessoa: TbPessoa;
 
-  @ManyToOne(() => TbBairro, (tbBairro) => tbBairro.tbEnderecos, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => TbBairro, (tbBairro) => tbBairro.tbEnderecos)
   @JoinColumn([{ name: "CODIGO_BAIRRO", referencedColumnName: "codigoBairro" }])
   codigoBairro: TbBairro;
 }
