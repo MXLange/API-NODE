@@ -1,9 +1,11 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
+import { ControllerBairro } from "../../bairro/controller/controllerBairro";
 
 const rotaDeBairro = Router();
+const controllerBairro = new ControllerBairro();
 
-rotaDeBairro.get("/", (req: Request, res: Response) => {
-  return res.status(200).json({ mensagem: "Bairro" });
-});
+rotaDeBairro.post("/", controllerBairro.cadastrar);
+rotaDeBairro.get("/", controllerBairro.buscar);
+rotaDeBairro.put("/", controllerBairro.atualizar);
 
 export { rotaDeBairro };

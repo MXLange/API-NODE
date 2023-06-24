@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ControllerMunicipio } from "../../municipio/controller/controllermunicipio";
+import { ControllerMunicipio } from "../../municipio/controller/controllerMunicipio";
 
 const rotaDeMunicipio = Router();
 const controllerMunicipio = new ControllerMunicipio();

@@ -14,14 +14,20 @@ export class ControllerMunicipio {
     if (!status) throw new AppError("Por favor insira um status.")
 
     const municipioDAO = new MunicipioDAO()
-    const resultado = await municipioDAO.criar({ codigoUF, nome, status })
+    const resposta = await municipioDAO.criar({ codigoUF, nome, status })
 
-    for (let item of resultado) {
+    let retornar = [];
+    for (let item of resposta) {
       const codigo = item.codigoUf.codigoUf
-      item.codigoUf = codigo;
+      item.codigoUf = codigo
+      let temp: any = {}
+      temp.codigoMunicipio = item.codigoUf
+      temp.codigoUF = item.codigoUf
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
     }
-
-    return res.status(200).json(resultado)
+    return res.status(200).json(retornar)
   }
 
   async buscar(req: Request, res: Response) {
@@ -40,14 +46,20 @@ export class ControllerMunicipio {
     if (pesquisar.status === "excluir") delete pesquisar.status
 
     const municipioDAO = new MunicipioDAO();
-    const resultado: Array<any> = await municipioDAO.pesquisa(pesquisar)
+    const resposta: Array<any> = await municipioDAO.pesquisa(pesquisar)
 
-    for (let item of resultado) {
+    let retornar = [];
+    for (let item of resposta) {
       const codigo = item.codigoUf.codigoUf
-      item.codigoUf = codigo;
+      item.codigoUf = codigo
+      let temp: any = {}
+      temp.codigoMunicipio = item.codigoUf
+      temp.codigoUF = item.codigoUf
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
     }
-
-    return res.status(200).json(resultado)
+    return res.status(200).json(retornar)
   }
 
   async atualizar(req: Request, res: Response) {
@@ -60,13 +72,20 @@ export class ControllerMunicipio {
 
     const municipioDAO = new MunicipioDAO();
 
-    const resultado: Array<any> = await municipioDAO.alterar({ codigoMunicipio, codigoUF, nome, status })
+    const resposta: Array<any> = await municipioDAO.alterar({ codigoMunicipio, codigoUF, nome, status })
 
-    for (let item of resultado) {
+    let retornar = [];
+    for (let item of resposta) {
       const codigo = item.codigoUf.codigoUf
-      item.codigoUf = codigo;
+      item.codigoUf = codigo
+      let temp: any = {}
+      temp.codigoMunicipio = item.codigoUf
+      temp.codigoUF = item.codigoUf
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
     }
-
-    return res.status(200).json(resultado)
+    return res.status(200).json(retornar)
   }
+
 }

@@ -6,7 +6,7 @@ export interface ICadastrarMunicipio {
 
 export interface IAlterarMunicipio {
   codigoMunicipio: number;
-  codigoUF: string;
+  codigoUF: number;
   nome: string;
   status: number;
 }

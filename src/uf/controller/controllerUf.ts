@@ -15,8 +15,17 @@ export class ControllerUf {
 
     const ufDAO = new UfDAO()
     const resposta = await ufDAO.criar({ sigla, nome, status })
+    let retornar = [];
+    for (let item of resposta) {
+      let temp: any = {};
+      temp.codigoUF = item.codigoUf
+      temp.sigla = item.sigla
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
+    }
 
-    return res.status(200).json(resposta)
+    return res.status(200).json(retornar)
   }
 
   async buscar(req: Request, res: Response) {
@@ -35,22 +44,42 @@ export class ControllerUf {
     if (pesquisar.status === "excluir") delete pesquisar.status
 
     const ufDAO = new UfDAO();
-    const resultado = await ufDAO.pesquisa(pesquisar)
+    const resposta: any = await ufDAO.pesquisa(pesquisar)
 
-    return res.status(200).json(resultado)
+    let retornar = [];
+    for (let item of resposta) {
+      let temp: any = {};
+      temp.codigoUF = item.codigoUf
+      temp.sigla = item.sigla
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
+    }
+
+    return res.status(200).json(retornar)
   }
 
   async atualizar(req: Request, res: Response) {
-    const { codigoUf, sigla, nome, status } = req.body;
+    const { codigoUF, sigla, nome, status } = req.body;
 
-    if (!codigoUf) throw new AppError("Por favor insira uma código de UF.")
+    if (!codigoUF) throw new AppError("Por favor insira uma código de UF.")
     if (!sigla) throw new AppError("Por favor insira uma sigla.")
     if (!nome) throw new AppError("Por favor insira um nome.")
     if (!status) throw new AppError("Por favor insira um status.")
 
     const ufDAO = new UfDAO()
-    const resposta = await ufDAO.alterar({ codigoUf, sigla, nome, status })
+    const resposta = await ufDAO.alterar({ codigoUF, sigla, nome, status })
 
-    return res.status(200).json(resposta)
+    let retornar = [];
+    for (let item of resposta) {
+      let temp: any = {};
+      temp.codigoUF = item.codigoUf
+      temp.sigla = item.sigla
+      temp.nome = item.nome
+      temp.status = item.status
+      retornar.push(temp)
+    }
+
+    return res.status(200).json(retornar)
   }
 }

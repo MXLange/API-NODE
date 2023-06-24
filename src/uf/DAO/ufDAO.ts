@@ -42,23 +42,23 @@ export class UfDAO {
     return resultado;
   }
 
-  async alterar({ codigoUf, sigla, nome, status }: IAlterarUf) {
+  async alterar({ codigoUF, sigla, nome, status }: IAlterarUf) {
     const jaExisteSigla = await ufRepository.findOne({
       where: {
         sigla,
       }
     })
-    if (jaExisteSigla && jaExisteSigla.codigoUf !== codigoUf) throw new AppError(`Já existe uma UF com a sigla ${sigla}.`)
+    if (jaExisteSigla && jaExisteSigla.codigoUf !== codigoUF) throw new AppError(`Já existe uma UF com a sigla ${sigla}.`)
     const jaExisteNome = await ufRepository.findOne({
       where: {
         nome,
       }
     })
-    if (jaExisteNome && jaExisteNome.codigoUf !== codigoUf) throw new AppError(`Já existe uma UF com o nome ${nome}.`)
+    if (jaExisteNome && jaExisteNome.codigoUf !== codigoUF) throw new AppError(`Já existe uma UF com o nome ${nome}.`)
 
     let uf: any = await ufRepository.findOne({
       where: {
-        codigoUf,
+        codigoUf: codigoUF,
       }
     });
     if (!uf) throw new AppError("Insira um código de UF válido")

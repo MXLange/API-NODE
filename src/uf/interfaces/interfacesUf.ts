@@ -5,7 +5,7 @@ export interface ICadastrarUf {
 }
 
 export interface IAlterarUf {
-  codigoUf: number;
+  codigoUF: number;
   sigla: string;
   nome: string;
   status: number;

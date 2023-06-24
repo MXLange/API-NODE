@@ -1,12 +1,19 @@
 import { AppDataSource } from "../../data-source";
 import AppError from "../../shared/errors/AppErrors";
+import { ufRepository } from "../../uf/repository/ufRepository";
 import { IAlterarMunicipio, ICadastrarMunicipio } from "../interfaces/interfacesMunicipio";
 import { municipioRepository } from "../repository/municipioRepository";
 
 export class MunicipioDAO {
 
   async criar({ codigoUF, nome, status }: ICadastrarMunicipio): Promise<any> {
-    const queryRunner = await AppDataSource.createQueryRunner()
+    const existeUf = await ufRepository.findOne({
+      where: {
+        codigoUf: codigoUF,
+      }
+    })
+    if (!existeUf) throw new AppError("Por favor, insira um código de UF válido")
+    const queryRunner = AppDataSource.createQueryRunner()
     const jaExiste = await queryRunner.manager.query(`SELECT * FROM TB_MUNICIPIO WHERE CODIGO_UF='${codigoUF}' AND NOME='${nome}'`);
 
     if (jaExiste.length !== 0) throw new AppError(`Já existe uma município com o nome ${nome} para esta UF.`)
@@ -42,9 +49,8 @@ export class MunicipioDAO {
   }
 
   async alterar({ codigoMunicipio, codigoUF, nome, status }: IAlterarMunicipio): Promise<Array<any>> {
-    const queryRunner = await AppDataSource.createQueryRunner()
+    const queryRunner = AppDataSource.createQueryRunner()
     const jaExiste = await queryRunner.manager.query(`SELECT * FROM TB_MUNICIPIO WHERE CODIGO_UF='${codigoUF}' AND NOME='${nome}'`);
-    console.log(jaExiste)
     if (jaExiste.length !== 0 && jaExiste[0].CODIGO_MUNICIPIO !== codigoMunicipio) throw new AppError(`Já existe uma município com o nome ${nome} para esta UF.`)
 
     let municipio: any = await municipioRepository.findOne({
@@ -55,7 +61,15 @@ export class MunicipioDAO {
         codigoUf: true
       },
     });
-    if (!municipio) throw new AppError("Insira um código de UF válido")
+
+    if (!municipio) throw new AppError("Insira um código de município válido.")
+
+    const existeUf = await ufRepository.findOne({
+      where: {
+        codigoUf: codigoUF,
+      }
+    })
+    if (!existeUf) throw new AppError("Por favor, insira um código de UF válido")
 
     municipio.nome = nome
     municipio.status = status
