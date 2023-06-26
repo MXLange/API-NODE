@@ -22,14 +22,8 @@ export class BairroDAO {
 
     if (!resultado) throw new AppError("Não foi possível incluir MUNICIPIO no banco de dados.", 404)
 
-    const retorno = await bairroRepository.find({
-      relations: {
-        codigoMunicipio: true
-      },
-      order: {
-        codigoMunicipio: "DESC"
-      }
-    });
+    const retorno = await queryRunner.manager.query(`SELECT CODIGO_BAIRRO "codigoBairro", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_BAIRRO ORDER BY "codigoBairro" DESC`)
+    if (!retorno) throw new AppError("O bairro foi cadastrado, porém não foi possível endontrar o retorno desejado")
     return retorno;
   }
 
@@ -40,7 +34,7 @@ export class BairroDAO {
         codigoMunicipio: true
       },
       order: {
-        codigoMunicipio: "DESC"
+        codigoBairro: "DESC"
       }
     });
 
@@ -77,14 +71,8 @@ export class BairroDAO {
     const resultado = await bairroRepository.save(bairro)
     if (!resultado) throw new AppError("Não foi possível alterar o registro.")
 
-    const retorno = await bairroRepository.find({
-      relations: {
-        codigoMunicipio: true
-      },
-      order: {
-        codigoMunicipio: "DESC"
-      }
-    });
+    const retorno = await queryRunner.manager.query(`SELECT CODIGO_BAIRRO "codigoBairro", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_BAIRRO ORDER BY "codigoBairro" DESC`)
+    if (!retorno) throw new AppError("O bairro foi cadastrado, porém não foi possível endontrar o retorno desejado")
     return retorno;
   }
 }

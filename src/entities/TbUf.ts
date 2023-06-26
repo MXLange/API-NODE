@@ -1,7 +1,7 @@
 import { Column, Entity, Index, OneToMany } from "typeorm";
 import { TbMunicipio } from "./TbMunicipio";
 
-@Index("TB_UF_PK", ["codigoUf"], { unique: true })
+@Index("TB_UF_PK", ["codigoUF"], { unique: true })
 @Entity("TB_UF")
 export class TbUf {
   @Column("number", {
@@ -10,7 +10,7 @@ export class TbUf {
     precision: 9,
     scale: 0,
   })
-  codigoUf: number;
+  codigoUF: number;
 
   @Column("varchar2", { name: "SIGLA", length: 3 })
   sigla: string;
@@ -21,6 +21,6 @@ export class TbUf {
   @Column("number", { name: "STATUS", precision: 3, scale: 0 })
   status: number;
 
-  @OneToMany(() => TbMunicipio, (tbMunicipio) => tbMunicipio.codigoUf)
+  @OneToMany(() => TbMunicipio, (tbMunicipio) => tbMunicipio.codigoUF)
   tbMunicipios: TbMunicipio[];
 }

@@ -30,6 +30,6 @@ export class TbMunicipio {
   tbBairros: TbBairro[];
 
   @ManyToOne(() => TbUf, (tbUf) => tbUf.tbMunicipios)
-  @JoinColumn([{ name: "CODIGO_UF", referencedColumnName: "codigoUf" }])
-  codigoUf: TbUf;
+  @JoinColumn([{ name: "CODIGO_UF", referencedColumnName: "codigoUF" }])
+  codigoUF: TbUf;
 }

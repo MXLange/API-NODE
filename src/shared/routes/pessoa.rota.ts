@@ -1,9 +1,11 @@
-import { Request, Response, Router } from "express";
+import { Router } from "express";
+import { ControllerPessoa } from "../../pessoa/controller/controllerPessoa";
 
 const rotaDePessoa = Router();
+const controllerPessoa = new ControllerPessoa();
 
-rotaDePessoa.get("/", (req: Request, res: Response) => {
-  return res.status(200).json({ mensagem: "Pessoa" });
-});
+rotaDePessoa.post("/", controllerPessoa.cadastrar);
+// rotaDePessoa.get("/", controllerPessoa.buscar);
+// rotaDePessoa.put("/", controllerPessoa.atualizar);
 
 export { rotaDePessoa };

@@ -18,15 +18,14 @@ export class UfDAO {
       }
     })
     if (jaExisteNome) throw new AppError(`Já existe uma UF com o nome ${nome}.`)
-    const queryRunner = await AppDataSource.createQueryRunner()
+
+    const queryRunner = AppDataSource.createQueryRunner()
     const resultado = await queryRunner.manager.query(`INSERT INTO TB_UF (CODIGO_UF, SIGLA, NOME, STATUS) VALUES (SEQUENCE_UF.nextval, '${sigla}', '${nome}', ${status})`)
     if (!resultado) throw new AppError("Não foi possível incluir UF no banco de dados.", 404)
 
-    const retorno = await ufRepository.find({
-      order: {
-        codigoUf: "DESC"
-      }
-    })
+    const retorno = await this.pesquisa({})
+    if (!retorno) throw new AppError("Não foi possível gerar o retorno, porém seu cadastro foi concluído.", 404)
+
     return retorno;
   }
 
@@ -34,7 +33,7 @@ export class UfDAO {
     const resultado = await ufRepository.find({
       where: dados,
       order: {
-        codigoUf: "DESC"
+        codigoUF: "DESC"
       }
     });
 
@@ -48,17 +47,19 @@ export class UfDAO {
         sigla,
       }
     })
-    if (jaExisteSigla && jaExisteSigla.codigoUf !== codigoUF) throw new AppError(`Já existe uma UF com a sigla ${sigla}.`)
+    if (jaExisteSigla && jaExisteSigla.codigoUF !== codigoUF) throw new AppError(`Já existe uma UF com a sigla ${sigla}.`)
+
     const jaExisteNome = await ufRepository.findOne({
       where: {
         nome,
       }
     })
-    if (jaExisteNome && jaExisteNome.codigoUf !== codigoUF) throw new AppError(`Já existe uma UF com o nome ${nome}.`)
+
+    if (jaExisteNome && jaExisteNome.codigoUF !== codigoUF) throw new AppError(`Já existe uma UF com o nome ${nome}.`)
 
     let uf: any = await ufRepository.findOne({
       where: {
-        codigoUf: codigoUF,
+        codigoUF: codigoUF,
       }
     });
     if (!uf) throw new AppError("Insira um código de UF válido")
@@ -70,11 +71,9 @@ export class UfDAO {
     const resultado = await ufRepository.save(uf)
     if (!resultado) throw new AppError("Não foi possível alterar o registro.")
 
-    const retorno = await ufRepository.find({
-      order: {
-        codigoUf: "DESC"
-      }
-    })
+
+    const retorno = await this.pesquisa({});
+    if (!retorno) throw new AppError("A UF foi atualizada, porém não conseguimos encontrar o retorno esperado.", 404)
     return retorno;
   }
 }

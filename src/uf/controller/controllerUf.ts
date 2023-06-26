@@ -15,17 +15,7 @@ export class ControllerUf {
 
     const ufDAO = new UfDAO()
     const resposta = await ufDAO.criar({ sigla, nome, status })
-    let retornar = [];
-    for (let item of resposta) {
-      let temp: any = {};
-      temp.codigoUF = item.codigoUf
-      temp.sigla = item.sigla
-      temp.nome = item.nome
-      temp.status = item.status
-      retornar.push(temp)
-    }
-
-    return res.status(200).json(retornar)
+    return res.status(200).json(resposta)
   }
 
   async buscar(req: Request, res: Response) {
@@ -44,19 +34,8 @@ export class ControllerUf {
     if (pesquisar.status === "excluir") delete pesquisar.status
 
     const ufDAO = new UfDAO();
-    const resposta: any = await ufDAO.pesquisa(pesquisar)
-
-    let retornar = [];
-    for (let item of resposta) {
-      let temp: any = {};
-      temp.codigoUF = item.codigoUf
-      temp.sigla = item.sigla
-      temp.nome = item.nome
-      temp.status = item.status
-      retornar.push(temp)
-    }
-
-    return res.status(200).json(retornar)
+    const resposta: unknown = await ufDAO.pesquisa(pesquisar)
+    return res.status(200).json(resposta!)
   }
 
   async atualizar(req: Request, res: Response) {
@@ -70,16 +49,6 @@ export class ControllerUf {
     const ufDAO = new UfDAO()
     const resposta = await ufDAO.alterar({ codigoUF, sigla, nome, status })
 
-    let retornar = [];
-    for (let item of resposta) {
-      let temp: any = {};
-      temp.codigoUF = item.codigoUf
-      temp.sigla = item.sigla
-      temp.nome = item.nome
-      temp.status = item.status
-      retornar.push(temp)
-    }
-
-    return res.status(200).json(retornar)
+    return res.status(200).json(resposta)
   }
 }

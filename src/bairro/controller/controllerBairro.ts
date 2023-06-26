@@ -15,18 +15,8 @@ export class ControllerBairro {
 
     const bairroDAO = new BairroDAO()
     const resposta = await bairroDAO.criar({ codigoMunicipio, nome, status })
-    let retornar = [];
-    for (let item of resposta) {
-      const codigo = item.codigoMunicipio.codigoMunicipio
-      item.codigoMunicipio = codigo
-      let temp: any = {}
-      temp.codigoBairro = item.codigoBairro
-      temp.codigoMunicipio = item.codigoMunicipio
-      temp.nome = item.nome
-      temp.status = item.status
-      retornar.push(temp)
-    }
-    return res.status(200).json(retornar)
+
+    return res.status(200).json(resposta)
   }
 
   async buscar(req: Request, res: Response) {
@@ -46,7 +36,6 @@ export class ControllerBairro {
 
     const bairroDAO = new BairroDAO();
     const resposta: Array<any> = await bairroDAO.pesquisa(pesquisar)
-    console.log(resposta)
     let retornar = [];
     for (let item of resposta) {
       const codigo = item.codigoMunicipio.codigoMunicipio
@@ -72,20 +61,7 @@ export class ControllerBairro {
     const bairroDAO = new BairroDAO();
 
     const resposta: Array<any> = await bairroDAO.alterar({ codigoBairro, codigoMunicipio, nome, status })
-    console.log(resposta)
-    let retornar = [];
-    for (let item of resposta) {
-      const codigo = item.codigoMunicipio.codigoMunicipio
-      item.codigoMunicipio = codigo
-      let temp: any = {}
-      temp.codigoBairro = item.codigoBairro
-      temp.codigoMunicipio = item.codigoMunicipio
-      temp.nome = item.nome
-      temp.status = item.status
-      retornar.push(temp)
-    }
-    console.log(retornar)
-    return res.status(200).json(retornar)
+    return res.status(200).json(resposta)
   }
 
 }

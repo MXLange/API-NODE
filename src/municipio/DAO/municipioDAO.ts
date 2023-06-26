@@ -9,7 +9,7 @@ export class MunicipioDAO {
   async criar({ codigoUF, nome, status }: ICadastrarMunicipio): Promise<any> {
     const existeUf = await ufRepository.findOne({
       where: {
-        codigoUf: codigoUF,
+        codigoUF
       }
     })
     if (!existeUf) throw new AppError("Por favor, insira um código de UF válido")
@@ -21,30 +21,25 @@ export class MunicipioDAO {
     const resultado = await queryRunner.manager.query(`INSERT INTO TB_MUNICIPIO (CODIGO_MUNICIPIO, CODIGO_UF, NOME, STATUS) VALUES (SEQUENCE_MUNICIPIO.nextval, '${codigoUF}', '${nome}', ${status})`)
 
     if (!resultado) throw new AppError("Não foi possível incluir UF no banco de dados.", 404)
-
-    const retorno = await municipioRepository.find({
-      relations: {
-        codigoUf: true
-      },
-      order: {
-        codigoUf: "DESC"
-      }
-    });
+    const retorno = await queryRunner.manager.query(`SELECT CODIGO_MUNICIPIO "codigoMunicipio", CODIGO_UF "codigoUF", NOME "nome", STATUS "status" FROM TB_MUNICIPIO ORDER BY "codigoMunicipio" DESC`)
+    if (!retorno) throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado")
     return retorno;
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
+    console.log(dados)
     const resultado = await municipioRepository.find({
       where: dados,
       relations: {
-        codigoUf: true
+        codigoUF: true
       },
       order: {
-        codigoUf: "DESC"
+        codigoUF: "DESC"
       }
     });
 
     if (!resultado) throw new AppError("Não foi possível consultar UF no banco de dados.", 404)
+
     return resultado;
   }
 
@@ -58,7 +53,7 @@ export class MunicipioDAO {
         codigoMunicipio,
       },
       relations: {
-        codigoUf: true
+        codigoUF: true
       },
     });
 
@@ -66,7 +61,7 @@ export class MunicipioDAO {
 
     const existeUf = await ufRepository.findOne({
       where: {
-        codigoUf: codigoUF,
+        codigoUF
       }
     })
     if (!existeUf) throw new AppError("Por favor, insira um código de UF válido")
@@ -78,14 +73,8 @@ export class MunicipioDAO {
     const resultado = await municipioRepository.save(municipio)
     if (!resultado) throw new AppError("Não foi possível alterar o registro.")
 
-    const retorno = await municipioRepository.find({
-      relations: {
-        codigoUf: true
-      },
-      order: {
-        codigoUf: "DESC"
-      }
-    });
+    const retorno = await queryRunner.manager.query(`SELECT CODIGO_MUNICIPIO "codigoMunicipio", CODIGO_UF "codigoUF", NOME "nome", STATUS "status" FROM TB_MUNICIPIO ORDER BY "codigoMunicipio" DESC`)
+    if (!retorno) throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado")
     return retorno;
   }
 }
