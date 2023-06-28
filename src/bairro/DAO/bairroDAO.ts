@@ -22,13 +22,12 @@ export class BairroDAO {
 
     if (!resultado) throw new AppError("Não foi possível incluir MUNICIPIO no banco de dados.", 404)
 
-    const retorno = await queryRunner.manager.query(`SELECT CODIGO_BAIRRO "codigoBairro", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_BAIRRO ORDER BY "codigoBairro" DESC`)
-    if (!retorno) throw new AppError("O bairro foi cadastrado, porém não foi possível endontrar o retorno desejado")
+    const retorno = await this.pesquisa({})
     return retorno;
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-    const resultado = await bairroRepository.find({
+    const resultado: any = await bairroRepository.find({
       where: dados,
       relations: {
         codigoMunicipio: true
@@ -37,6 +36,10 @@ export class BairroDAO {
         codigoBairro: "DESC"
       }
     });
+
+    for (let item of resultado) {
+      item.codigoMunicipio = item.codigoMunicipio.codigoMunicipio
+    }
 
     if (!resultado) throw new AppError("Não foi possível consultar o bairro no banco de dados.", 404)
     return resultado;
@@ -71,7 +74,7 @@ export class BairroDAO {
     const resultado = await bairroRepository.save(bairro)
     if (!resultado) throw new AppError("Não foi possível alterar o registro.")
 
-    const retorno = await queryRunner.manager.query(`SELECT CODIGO_BAIRRO "codigoBairro", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_BAIRRO ORDER BY "codigoBairro" DESC`)
+    const retorno = await this.pesquisa({})
     if (!retorno) throw new AppError("O bairro foi cadastrado, porém não foi possível endontrar o retorno desejado")
     return retorno;
   }

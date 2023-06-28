@@ -16,4 +16,5 @@ export interface IAlterarPessoa {
   login: string;
   senha: string;
   status: number;
+  enderecos: Array<any>;
 }

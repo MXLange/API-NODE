@@ -10,7 +10,7 @@ export interface ICadastrarEndereco {
 
 export interface IAlterarEndereco {
   codigoEndereco: number;
-  codigoPessosa: number;
+  codigoPessoa: number;
   codigoBairro: number;
   nomeRua: string;
   numero: string;

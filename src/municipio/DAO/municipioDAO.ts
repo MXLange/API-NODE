@@ -21,24 +21,28 @@ export class MunicipioDAO {
     const resultado = await queryRunner.manager.query(`INSERT INTO TB_MUNICIPIO (CODIGO_MUNICIPIO, CODIGO_UF, NOME, STATUS) VALUES (SEQUENCE_MUNICIPIO.nextval, '${codigoUF}', '${nome}', ${status})`)
 
     if (!resultado) throw new AppError("Não foi possível incluir UF no banco de dados.", 404)
-    const retorno = await queryRunner.manager.query(`SELECT CODIGO_MUNICIPIO "codigoMunicipio", CODIGO_UF "codigoUF", NOME "nome", STATUS "status" FROM TB_MUNICIPIO ORDER BY "codigoMunicipio" DESC`)
+    const retorno = await this.pesquisa({})
     if (!retorno) throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado")
     return retorno;
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
     console.log(dados)
-    const resultado = await municipioRepository.find({
+    const resultado: any = await municipioRepository.find({
       where: dados,
       relations: {
         codigoUF: true
       },
       order: {
-        codigoUF: "DESC"
+        codigoMunicipio: "DESC"
       }
     });
 
     if (!resultado) throw new AppError("Não foi possível consultar UF no banco de dados.", 404)
+
+    for (let item of resultado) {
+      item.codigoUF = item.codigoUF.codigoUF
+    }
 
     return resultado;
   }
@@ -73,7 +77,7 @@ export class MunicipioDAO {
     const resultado = await municipioRepository.save(municipio)
     if (!resultado) throw new AppError("Não foi possível alterar o registro.")
 
-    const retorno = await queryRunner.manager.query(`SELECT CODIGO_MUNICIPIO "codigoMunicipio", CODIGO_UF "codigoUF", NOME "nome", STATUS "status" FROM TB_MUNICIPIO ORDER BY "codigoMunicipio" DESC`)
+    const retorno = await this.pesquisa({})
     if (!retorno) throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado")
     return retorno;
   }

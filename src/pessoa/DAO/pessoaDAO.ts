@@ -1,5 +1,6 @@
 import { AppDataSource } from "../../data-source";
 import { EnderecoDAO } from "../../endereco/DAO/enderecoDAO";
+import { enderecoRepository } from "../../endereco/repository/enderecoRepository";
 import { municipioRepository } from "../../municipio/repository/municipioRepository";
 import AppError from "../../shared/errors/AppErrors";
 import { IAlterarPessoa, ICadastrarPessoa } from "../interfaces/interfacesPessoa";
@@ -36,57 +37,115 @@ export class PessoaDAO {
       let cep = endereco.cep.toString()
       await enderecoDAO.criar({ codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep })
     }
-    // const retorno = await queryRunner.manager.query(`SELECT CODIGO_PESSOA "codigoPessoa", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_PESSOA ORDER BY "codigoPessoa" DESC`)
-    // if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")
-    // return retorno;
+    const retorno = await this.pesquisa({})
+    if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")
+    return retorno;
   }
 
-  // async pesquisa(dados: any): Promise<Array<any>> {
-  //   const resultado = await pessoaRepository.find({
-  //     where: dados,
-  //     relations: {
-  //       codigoMunicipio: true
-  //     },
-  //     order: {
-  //       codigoMunicipio: "DESC"
-  //     }
-  //   });
+  async pesquisa(dados: any): Promise<Array<any>> {
+    let count = 0;
+    let keys = 0;
+    let resultado: any;
+    for (let key in dados) {
+      if (key === "codigoPessoa") count++
+      keys++
+    }
+    if (count === 1 && keys === 1) {
+      resultado = await pessoaRepository.find({
+        where: dados,
+        relations: {
+          tbEnderecos: {
+            codigoBairro: {
+              codigoMunicipio: {
+                codigoUF: true
+              }
+            }
+          }
+        }
+      });
+      resultado = resultado[0]
+      resultado.enderecos = resultado.tbEnderecos
+      delete resultado.tbEnderecos
+      let arrayEnderecos = resultado.enderecos
+      console.log(arrayEnderecos)
+      for (let item of arrayEnderecos) {
+        item.codigoPessoa = resultado.codigoPessoa
+        item.bairro = item.codigoBairro
+        item.codigoBairro = item.bairro.codigoBairro
+        item.bairro.municipio = item.bairro.codigoMunicipio
+        item.bairro.codigoMunicipio = item.bairro.municipio.codigoMunicipio
+        item.bairro.municipio.uf = item.bairro.municipio.codigoUF
+        item.bairro.municipio.codigoUF = item.bairro.municipio.uf.codigoUF
+      }
+    } else {
+      resultado = await pessoaRepository.find({
+        where: dados,
+        order: {
+          codigoPessoa: "DESC"
+        }
+      })
+      for (let item of resultado) {
+        item.enderecos = []
+      }
+    }
 
-  //   if (!resultado) throw new AppError("Não foi possível consultar o pessoa no banco de dados.", 404)
-  //   return resultado;
-  // }
+    if (!resultado) throw new AppError("Não foi possível consultar o pessoa no banco de dados.", 404)
+    return resultado;
+  }
 
-  // async alterar({ codigoPessoa, codigoMunicipio, nome, status }: IAlterarPessoa): Promise<Array<any>> {
-  //   const queryRunner = AppDataSource.createQueryRunner()
-  //   const jaExiste = await queryRunner.manager.query(`SELECT * FROM TB_PESSOA WHERE CODIGO_MUNICIPIO='${codigoMunicipio}' AND NOME='${nome}'`);
-  //   if (jaExiste.length !== 0 && jaExiste[0].CODIGO_PESSOA !== codigoPessoa)
-  //     throw new AppError(`Já existe um pessoa com o nome ${nome} para este município.`)
+  async alterar({ codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos }: IAlterarPessoa): Promise<Array<any>> {
+    const loginJaExiste = await pessoaRepository.findOne({
+      where: {
+        login,
+      }
+    })
+    if (loginJaExiste !== null && loginJaExiste.codigoPessoa !== codigoPessoa) throw new AppError(`O login ${login} já está em uso.`)
 
-  //   let municipio: any = await municipioRepository.findOne({
-  //     where: {
-  //       codigoMunicipio,
-  //     }
-  //   })
-  //   if (!municipio) throw new AppError("Insira um código de município válido")
-  //   let pessoa: any = await pessoaRepository.findOne({
-  //     where: {
-  //       codigoPessoa,
-  //     },
-  //     relations: {
-  //       codigoMunicipio: true
-  //     },
-  //   });
-  //   if (!pessoa) throw new AppError("Insira um código de pessoa válido")
+    const pessoa = await pessoaRepository.findOne({
+      where: {
+        codigoPessoa,
+      }
+    })
+    if (!pessoa) throw new AppError("Por favor insira um código de pessoa válido.")
 
-  //   pessoa.nome = nome
-  //   pessoa.status = status
-  //   pessoa.codigoMunicipio = codigoMunicipio
+    pessoa.nome = nome
+    pessoa.sobrenome = sobrenome
+    pessoa.idade = idade
+    pessoa.login = login
+    pessoa.senha = senha
+    pessoa.status = status
 
-  //   const resultado = await pessoaRepository.save(pessoa)
-  //   if (!resultado) throw new AppError("Não foi possível alterar o registro.")
+    const salvarPessoa = await pessoaRepository.save(pessoa)
+    if (!salvarPessoa) throw new AppError("Não foi possível alterar o registro")
 
-  //   const retorno = await queryRunner.manager.query(`SELECT CODIGO_PESSOA "codigoPessoa", CODIGO_MUNICIPIO "codigoMunicipio", NOME "nome", STATUS "status" FROM TB_PESSOA ORDER BY "codigoPessoa" DESC`)
-  //   if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")
-  //   return retorno;
-  // }
+    let enderecosAtuais: any = await this.pesquisa({ codigoPessoa: pessoa.codigoPessoa })
+    enderecosAtuais = enderecosAtuais.enderecos
+    let enderecosParaDeletar: Array<any> = []
+    let enderecosParaIncluir: Array<any> = []
+    let controle: Array<any> = []
+    for (let item of enderecos) {
+      if (item.codigoEndereco === undefined) {
+        enderecosParaIncluir.push(item)
+      } else {
+        controle[item.codigoEndereco] = 1
+      }
+    }
+    for (let item of enderecosAtuais) {
+      if (controle[item.codigoEndereco] !== 1) {
+        enderecosParaDeletar.push(item.codigoEndereco)
+      }
+    }
+
+    const enderecoDAO = new EnderecoDAO()
+    if (enderecosParaDeletar.length > 0) await enderecoDAO.deletarVarios(enderecosParaDeletar)
+    if (enderecosParaIncluir.length > 0) {
+      for (let endereco of enderecosParaIncluir) {
+        let { codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep } = endereco
+        await enderecoDAO.criar({ codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep })
+      }
+    }
+    const retorno = await this.pesquisa({})
+    if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")
+    return retorno;
+  }
 }

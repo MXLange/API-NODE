@@ -13,6 +13,13 @@ export class ControllerMunicipio {
     if (!nome) throw new AppError("Por favor insira um nome.")
     if (!status) throw new AppError("Por favor insira um status.")
 
+    if (typeof codigoUF !== "number") throw new AppError("O campo codigoUF deve ser do tipo numérico.", 403)
+    if (typeof nome !== "string") throw new AppError("O campo nome deve ser do tipo texto.", 403)
+    if (typeof status !== "number") throw new AppError("O campo status deve ser do tipo numérico.", 403)
+
+    if (nome.length > 256) throw new AppError("O nome deve possuir até 256 caracteres")
+    if (status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo")
+
     const municipioDAO = new MunicipioDAO()
     const resposta = await municipioDAO.criar({ codigoUF, nome, status })
     return res.status(200).json(resposta)
@@ -33,11 +40,11 @@ export class ControllerMunicipio {
     if (pesquisar.nome === "excluir") delete pesquisar.nome
     if (pesquisar.status === "excluir") delete pesquisar.status
 
+    if (pesquisar.nome && pesquisar.nome.length > 256) throw new AppError("A nome deve possuir até 256 caracteres")
+    if (pesquisar.status && pesquisar.status !== 1 && pesquisar.status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo")
+
     const municipioDAO = new MunicipioDAO();
     const resposta: Array<any> = await municipioDAO.pesquisa(pesquisar)
-
-
-
     return res.status(200).json(resposta)
   }
 
@@ -48,6 +55,14 @@ export class ControllerMunicipio {
     if (!codigoUF) throw new AppError("Por favor insira um código de UF.")
     if (!nome) throw new AppError("Por favor insira um nome.")
     if (!status) throw new AppError("Por favor insira um status.")
+
+    if (typeof codigoMunicipio !== "number") throw new AppError("O campo codigoMunicipio deve ser do tipo numérico.", 403)
+    if (typeof codigoUF !== "number") throw new AppError("O campo codigoUF deve ser do tipo numérico.", 403)
+    if (typeof nome !== "string") throw new AppError("O campo nome deve ser do tipo texto.", 403)
+    if (typeof status !== "number") throw new AppError("O campo status deve ser do tipo numérico.", 403)
+
+    if (nome && nome.length > 256) throw new AppError("A nome deve possuir até 60 caracteres")
+    if (status && status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo")
 
     const municipioDAO = new MunicipioDAO();
 
