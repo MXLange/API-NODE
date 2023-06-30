@@ -1,4 +1,5 @@
 export default class AppError {
+
   public readonly mensagem: string;
   public readonly status: number;
   public queryRunner: any;
@@ -8,4 +9,5 @@ export default class AppError {
     this.mensagem = mensagem;
     this.status = status;
   }
+
 }

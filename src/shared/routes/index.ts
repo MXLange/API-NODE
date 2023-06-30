@@ -4,11 +4,11 @@ import { rotaDeUf } from "./uf.rota";
 import { rotaDeBairro } from "./bairro.rota";
 import { rotaDePessoa } from "./pessoa.rota";
 
-const rotas = Router()
+const rotas = Router();
 
 rotas.use("/uf", rotaDeUf);
 rotas.use("/municipio", rotaDeMunicipio);
 rotas.use("/bairro", rotaDeBairro);
-rotas.use("/pessoa", rotaDePessoa)
+rotas.use("/pessoa", rotaDePessoa);
 
 export { rotas };
