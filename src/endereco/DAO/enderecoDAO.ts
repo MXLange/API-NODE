@@ -40,7 +40,14 @@ export class EnderecoDAO {
     endereco.numero = numero
     endereco.complemento = complemento
     endereco.cep = cep
-
+    console.log(endereco)
     await enderecoRepository.save(endereco)
+  }
+
+  async alterarVarios(enderecos: Array<any>) {
+    for (let endereco of enderecos) {
+      let { codigoEndereco, nomeRua, numero, complemento, cep, codigoBairro, codigoPessoa } = endereco
+      await this.alterar({ codigoEndereco, codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep })
+    }
   }
 }

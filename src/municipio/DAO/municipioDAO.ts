@@ -27,7 +27,6 @@ export class MunicipioDAO {
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-    console.log(dados)
     const resultado: any = await municipioRepository.find({
       where: dados,
       relations: {

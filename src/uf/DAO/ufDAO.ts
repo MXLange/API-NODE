@@ -1,4 +1,9 @@
+import { bairroRepository } from "../../bairro/repository/bairroRepository";
 import { AppDataSource } from "../../data-source";
+import { enderecoRepository } from "../../endereco/repository/enderecoRepository";
+import { TbBairro } from "../../entities/TbBairro";
+import { MunicipioDAO } from "../../municipio/DAO/municipioDAO";
+import { municipioRepository } from "../../municipio/repository/municipioRepository";
 import AppError from "../../shared/errors/AppErrors";
 import { IAlterarUf, ICadastrarUf } from "../interfaces/interfacesUf";
 import { ufRepository } from "../repository/ufRepository";
@@ -75,5 +80,42 @@ export class UfDAO {
     const retorno = await this.pesquisa({});
     if (!retorno) throw new AppError("A UF foi atualizada, porém não conseguimos encontrar o retorno esperado.", 404)
     return retorno;
+  }
+
+  async deletar(codigoUF: number) {
+    const queryRunner = AppDataSource.createQueryRunner()
+    const municipios = await queryRunner.manager.query(`SELECT * FROM TB_MUNICIPIO WHERE CODIGO_UF=${codigoUF}`)
+    let codigosMunicipios = []
+    let bairros = []
+    let codigosBairros = []
+    let enderecos = []
+    let codigosEnderecos = []
+
+    for (let municipio of municipios) {
+      codigosMunicipios.push(municipio.CODIGO_MUNICIPIO)
+      let res = await queryRunner.manager.query(`SELECT * FROM TB_BAIRRO WHERE CODIGO_MUNICIPIO=${municipio.CODIGO_MUNICIPIO}`)
+      if (res.length > 0) {
+        bairros.push(res)
+      }
+    }
+    for (let item of bairros) {
+      for (let bairro of item) {
+        codigosBairros.push(bairro.CODIGO_BAIRRO)
+        let res = await queryRunner.manager.query(`SELECT * FROM TB_ENDERECO WHERE CODIGO_BAIRRO=${bairro.CODIGO_BAIRRO}`)
+        if (res.length > 0) {
+          enderecos.push(res)
+        }
+      }
+    }
+    for (let item of enderecos) {
+      for (let endereco of item) {
+        codigosEnderecos.push(endereco.CODIGO_ENDERECO)
+      }
+    }
+    await enderecoRepository.delete(codigosEnderecos)
+    await bairroRepository.delete(codigosBairros)
+    await municipioRepository.delete(codigosMunicipios)
+    await ufRepository.delete({ codigoUF })
+    return true
   }
 }

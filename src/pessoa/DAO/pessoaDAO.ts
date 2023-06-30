@@ -50,7 +50,17 @@ export class PessoaDAO {
       if (key === "codigoPessoa") count++
       keys++
     }
-    if (count === 1 && keys === 1) {
+    if (count !== 1 && keys !== 1) {
+      resultado = await pessoaRepository.find({
+        where: dados,
+        order: {
+          codigoPessoa: "DESC"
+        }
+      })
+      for (let item of resultado) {
+        item.enderecos = []
+      }
+    } else {
       resultado = await pessoaRepository.find({
         where: dados,
         relations: {
@@ -67,7 +77,6 @@ export class PessoaDAO {
       resultado.enderecos = resultado.tbEnderecos
       delete resultado.tbEnderecos
       let arrayEnderecos = resultado.enderecos
-      console.log(arrayEnderecos)
       for (let item of arrayEnderecos) {
         item.codigoPessoa = resultado.codigoPessoa
         item.bairro = item.codigoBairro
@@ -76,16 +85,6 @@ export class PessoaDAO {
         item.bairro.codigoMunicipio = item.bairro.municipio.codigoMunicipio
         item.bairro.municipio.uf = item.bairro.municipio.codigoUF
         item.bairro.municipio.codigoUF = item.bairro.municipio.uf.codigoUF
-      }
-    } else {
-      resultado = await pessoaRepository.find({
-        where: dados,
-        order: {
-          codigoPessoa: "DESC"
-        }
-      })
-      for (let item of resultado) {
-        item.enderecos = []
       }
     }
 
@@ -122,27 +121,34 @@ export class PessoaDAO {
     enderecosAtuais = enderecosAtuais.enderecos
     let enderecosParaDeletar: Array<any> = []
     let enderecosParaIncluir: Array<any> = []
+    let enderecosParaAlterar: Array<any> = []
     let controle: Array<any> = []
-    for (let item of enderecos) {
-      if (item.codigoEndereco === undefined) {
-        enderecosParaIncluir.push(item)
+    for (let endereco of enderecos) {
+      if (endereco.codigoEndereco === undefined) {
+        enderecosParaIncluir.push(endereco)
       } else {
-        controle[item.codigoEndereco] = 1
+        controle[endereco.codigoEndereco] = 1
+        enderecosParaAlterar.push(endereco)
       }
     }
-    for (let item of enderecosAtuais) {
-      if (controle[item.codigoEndereco] !== 1) {
-        enderecosParaDeletar.push(item.codigoEndereco)
+    for (let endereco of enderecosAtuais) {
+      if (controle[endereco.codigoEndereco] !== 1) {
+        enderecosParaDeletar.push(endereco.codigoEndereco)
       }
     }
 
     const enderecoDAO = new EnderecoDAO()
-    if (enderecosParaDeletar.length > 0) await enderecoDAO.deletarVarios(enderecosParaDeletar)
+    if (enderecosParaDeletar.length > 0) {
+      await enderecoDAO.deletarVarios(enderecosParaDeletar)
+    }
     if (enderecosParaIncluir.length > 0) {
       for (let endereco of enderecosParaIncluir) {
         let { codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep } = endereco
         await enderecoDAO.criar({ codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep })
       }
+    }
+    if (enderecosParaAlterar.length > 0) {
+      await enderecoDAO.alterarVarios(enderecosParaAlterar)
     }
     const retorno = await this.pesquisa({})
     if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")

@@ -8,5 +8,6 @@ const controllerUf = new ControllerUf();
 rotaDeUf.get("/", controllerUf.buscar)
 rotaDeUf.post("/", controllerUf.cadastrar);
 rotaDeUf.put("/", controllerUf.atualizar);
+rotaDeUf.delete("/:codigoUF", controllerUf.deletar);
 
 export { rotaDeUf };
