@@ -52,6 +52,16 @@ export class ControllerBairro {
     return res.status(200).json(resposta)
   }
 
+  async deletar(req: Request, res: Response) {
+    const { codigoBairro } = req.params
+    const codigo = Number(codigoBairro)
+    const bairroDAO = new BairroDAO()
+    const resposta = await bairroDAO.deletar(codigo)
+    if (resposta) {
+      return res.status(200).json({ mensagem: "Registro excluído com sucesso" })
+    }
+  }
+
 }
 
 function verificarParametrosPostBairro({ codigoMunicipio, nome, status }: ICadastrarBairro) {

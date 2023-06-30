@@ -18,3 +18,8 @@ export interface IAlterarPessoa {
   status: number;
   enderecos: Array<any>;
 }
+
+export interface ILogin {
+  login: string;
+  senha: string;
+}

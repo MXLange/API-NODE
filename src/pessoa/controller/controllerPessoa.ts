@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { PessoaDAO } from "../DAO/pessoaDAO";
 import AppError from "../../shared/errors/AppErrors";
+import jwt from "jsonwebtoken";
 import { IAlterarPessoa, ICadastrarPessoa } from "../interfaces/interfacesPessoa";
 
 
@@ -45,6 +46,28 @@ export class ControllerPessoa {
     const pessoaDAO = new PessoaDAO()
     const resposta = await pessoaDAO.alterar({ codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos })
     return res.status(200).json(resposta)
+  }
+
+  async deletar(req: Request, res: Response) {
+    const { codigoPessoa } = req.params
+    const codigo = Number(codigoPessoa)
+    const pessoaDAO = new PessoaDAO()
+    const resposta = await pessoaDAO.deletar(codigo)
+    if (resposta) {
+      return res.status(200).json({ mensagem: "Registro excluído com sucesso" })
+    }
+  }
+
+  async login(req: Request, res: Response) {
+    const { login, senha } = req.body
+
+    const pessoaDAO = new PessoaDAO();
+
+    const resposta = await pessoaDAO.login({ login, senha });
+
+    const token = await gerarToken(resposta)
+
+    return res.status(200).json({ mensagem: "Login realizado com sucesso", token })
   }
 }
 
@@ -120,4 +143,26 @@ function verificarEnderecos(enderecos: Array<any>) {
     if (endereco.complemento.length > 20) throw new AppError(`O complemento deve possuir até 20 caracteres para o ${num}º endereço.`)
     if (endereco.cep.length > 50) throw new AppError(`O cep deve possuir até 10 caracteres para o ${num}º endereço.`)
   }
+}
+
+async function gerarToken(data: any) {
+  const { nome, login } = data
+
+  const token = jwt.sign({ nome: nome, login: login }, process.env.JWT_ACCESS_SECRET!, {
+    expiresIn: "1d",
+  });
+
+  return token
+}
+
+export async function validarToken(barerToken: string): Promise<boolean> {
+  const token = barerToken.split(" ")
+
+  const pessoa = jwt.verify(token[1], process.env.JWT_ACCESS_SECRET!, (err, data: any) => {
+    if (err) {
+      throw new AppError("Token inválido")
+    }
+  });
+  console.log(pessoa)
+  return true;
 }

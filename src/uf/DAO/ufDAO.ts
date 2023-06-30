@@ -1,8 +1,6 @@
 import { bairroRepository } from "../../bairro/repository/bairroRepository";
 import { AppDataSource } from "../../data-source";
 import { enderecoRepository } from "../../endereco/repository/enderecoRepository";
-import { TbBairro } from "../../entities/TbBairro";
-import { MunicipioDAO } from "../../municipio/DAO/municipioDAO";
 import { municipioRepository } from "../../municipio/repository/municipioRepository";
 import AppError from "../../shared/errors/AppErrors";
 import { IAlterarUf, ICadastrarUf } from "../interfaces/interfacesUf";
@@ -24,10 +22,14 @@ export class UfDAO {
     })
     if (jaExisteNome) throw new AppError(`Já existe uma UF com o nome ${nome}.`, 409)
 
-    const queryRunner = AppDataSource.createQueryRunner()
-    const resultado = await queryRunner.manager.query(`INSERT INTO TB_UF (CODIGO_UF, SIGLA, NOME, STATUS) VALUES (SEQUENCE_UF.nextval, '${sigla}', '${nome}', ${status})`)
-    if (!resultado) throw new AppError("Não foi possível incluir UF no banco de dados.")
+    const queryRunner = AppDataSource.createQueryRunner();
 
+    await queryRunner.connect()
+
+    const resultado = await queryRunner.manager.query(`INSERT INTO TB_UF (CODIGO_UF, SIGLA, NOME, STATUS) VALUES (SEQUENCE_UF.nextval, '${sigla}', '${nome}', ${status})`)
+    if (!resultado) throw new AppError("Não foi possível incluir UF no banco de dados.", 400, queryRunner)
+
+    queryRunner.release()
     const retorno = await this.pesquisa({})
     if (!retorno) throw new AppError("Não foi possível gerar o retorno, porém seu cadastro foi concluído.")
 
@@ -83,8 +85,20 @@ export class UfDAO {
   }
 
   async deletar(codigoUF: number) {
-    const queryRunner = AppDataSource.createQueryRunner()
+    const existeUf = await ufRepository.find({
+      where: {
+        codigoUF
+      }
+    })
+
+    if (existeUf.length === 0) throw new AppError("Insira um código de UF válido.")
+
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    await queryRunner.connect()
+
     const municipios = await queryRunner.manager.query(`SELECT * FROM TB_MUNICIPIO WHERE CODIGO_UF=${codigoUF}`)
+
     let codigosMunicipios = []
     let bairros = []
     let codigosBairros = []
@@ -98,6 +112,7 @@ export class UfDAO {
         bairros.push(res)
       }
     }
+
     for (let item of bairros) {
       for (let bairro of item) {
         codigosBairros.push(bairro.CODIGO_BAIRRO)
@@ -107,15 +122,29 @@ export class UfDAO {
         }
       }
     }
+
+    await queryRunner.release()
+
     for (let item of enderecos) {
       for (let endereco of item) {
         codigosEnderecos.push(endereco.CODIGO_ENDERECO)
       }
     }
-    await enderecoRepository.delete(codigosEnderecos)
-    await bairroRepository.delete(codigosBairros)
-    await municipioRepository.delete(codigosMunicipios)
+
+    if (codigosEnderecos.length > 0) {
+      await enderecoRepository.delete(codigosEnderecos)
+    }
+
+    if (codigosBairros.length > 0) {
+      await bairroRepository.delete(codigosBairros)
+    }
+
+    if (codigosMunicipios.length > 0) {
+      await municipioRepository.delete(codigosMunicipios)
+    }
+
     await ufRepository.delete({ codigoUF })
+
     return true
   }
 }

@@ -1,9 +1,9 @@
+import { compare, hash } from "bcrypt";
 import { AppDataSource } from "../../data-source";
 import { EnderecoDAO } from "../../endereco/DAO/enderecoDAO";
 import { enderecoRepository } from "../../endereco/repository/enderecoRepository";
-import { municipioRepository } from "../../municipio/repository/municipioRepository";
 import AppError from "../../shared/errors/AppErrors";
-import { IAlterarPessoa, ICadastrarPessoa } from "../interfaces/interfacesPessoa";
+import { IAlterarPessoa, ICadastrarPessoa, ILogin } from "../interfaces/interfacesPessoa";
 import { pessoaRepository } from "../repository/pessoaRepository";
 
 export class PessoaDAO {
@@ -16,9 +16,17 @@ export class PessoaDAO {
       }
     })
     if (existeLogin) throw new AppError(`Este login, ${login}, já está em uso. Insira um login diferente.`)
-    const queryRunner = AppDataSource.createQueryRunner()
+
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    senha = await encriptar(senha);
+
+    await queryRunner.connect()
 
     const resultado = await queryRunner.manager.query(`INSERT INTO TB_PESSOA (CODIGO_PESSOA ,NOME, SOBRENOME, IDADE, LOGIN, SENHA, STATUS) VALUES (SEQUENCE_PESSOA.nextval, '${nome}', '${sobrenome}', '${idade}', '${login}', '${senha}', ${status})`)
+
+    await queryRunner.release()
+
     if (!resultado) throw new AppError("Não foi possível incluir esse cadastro no banco de dados.", 404)
 
 
@@ -43,26 +51,15 @@ export class PessoaDAO {
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-    let count = 0;
-    let keys = 0;
+    const { codigoPessoa, login, status } = dados;
+
     let resultado: any;
-    for (let key in dados) {
-      if (key === "codigoPessoa") count++
-      keys++
-    }
-    if (count !== 1 && keys !== 1) {
+
+    if (codigoPessoa !== undefined && login === undefined && status === undefined) {
       resultado = await pessoaRepository.find({
-        where: dados,
-        order: {
-          codigoPessoa: "DESC"
-        }
-      })
-      for (let item of resultado) {
-        item.enderecos = []
-      }
-    } else {
-      resultado = await pessoaRepository.find({
-        where: dados,
+        where: {
+          codigoPessoa,
+        },
         relations: {
           tbEnderecos: {
             codigoBairro: {
@@ -73,22 +70,35 @@ export class PessoaDAO {
           }
         }
       });
-      resultado = resultado[0]
-      resultado.enderecos = resultado.tbEnderecos
-      delete resultado.tbEnderecos
-      let arrayEnderecos = resultado.enderecos
-      for (let item of arrayEnderecos) {
-        item.codigoPessoa = resultado.codigoPessoa
-        item.bairro = item.codigoBairro
-        item.codigoBairro = item.bairro.codigoBairro
-        item.bairro.municipio = item.bairro.codigoMunicipio
-        item.bairro.codigoMunicipio = item.bairro.municipio.codigoMunicipio
-        item.bairro.municipio.uf = item.bairro.municipio.codigoUF
-        item.bairro.municipio.codigoUF = item.bairro.municipio.uf.codigoUF
+      if (resultado.length > 0) {
+        resultado = resultado[0]
+        resultado.enderecos = resultado.tbEnderecos
+        delete resultado.tbEnderecos
+        let arrayEnderecos = resultado.enderecos
+        for (let item of arrayEnderecos) {
+          item.codigoPessoa = resultado.codigoPessoa
+          item.bairro = item.codigoBairro
+          item.codigoBairro = item.bairro.codigoBairro
+          item.bairro.municipio = item.bairro.codigoMunicipio
+          item.bairro.codigoMunicipio = item.bairro.municipio.codigoMunicipio
+          item.bairro.municipio.uf = item.bairro.municipio.codigoUF
+          item.bairro.municipio.codigoUF = item.bairro.municipio.uf.codigoUF
+        }
+      }
+    } else {
+      resultado = await pessoaRepository.find({
+        where: dados,
+        order: {
+          codigoPessoa: "DESC"
+        }
+      })
+      for (let item of resultado) {
+        item.enderecos = []
       }
     }
 
     if (!resultado) throw new AppError("Não foi possível consultar o pessoa no banco de dados.", 404)
+
     return resultado;
   }
 
@@ -114,7 +124,14 @@ export class PessoaDAO {
     pessoa.senha = senha
     pessoa.status = status
 
-    const salvarPessoa = await pessoaRepository.save(pessoa)
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    await queryRunner.connect()
+
+    const salvarPessoa = await queryRunner.manager.query(`UPDATE TB_PESSOA SET NOME='${nome}', SOBRENOME='${sobrenome}', IDADE=${idade}, LOGIN='${login}', SENHA='${senha}', STATUS=${status} WHERE CODIGO_PESSOA=${codigoPessoa}`)
+
+    await queryRunner.release()
+
     if (!salvarPessoa) throw new AppError("Não foi possível alterar o registro")
 
     let enderecosAtuais: any = await this.pesquisa({ codigoPessoa: pessoa.codigoPessoa })
@@ -154,4 +171,63 @@ export class PessoaDAO {
     if (!retorno) throw new AppError("O pessoa foi cadastrado, porém não foi possível endontrar o retorno desejado")
     return retorno;
   }
+
+  async deletar(codigoPessoa: number) {
+    const existePessoa = pessoaRepository.find({
+      where: {
+        codigoPessoa
+      }
+    })
+
+    if (!existePessoa) throw new AppError("Insira um código de município válido.")
+
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    await queryRunner.connect()
+
+    const enderecos = await queryRunner.manager.query(`SELECT * FROM TB_ENDERECO WHERE CODIGO_PESSOA=${codigoPessoa}`)
+
+    await queryRunner.release()
+
+    let codigosEnderecos = []
+
+    for (let endereco of enderecos) {
+      codigosEnderecos.push(endereco.CODIGO_ENDERECO)
+    }
+
+    if (codigosEnderecos.length > 0) {
+      await enderecoRepository.delete(codigosEnderecos)
+    }
+
+    await pessoaRepository.delete({ codigoPessoa })
+
+    return true
+  }
+
+  async login({ login, senha }: ILogin) {
+
+    const pessoa: any = await pessoaRepository.find({
+      where: {
+        login
+      }
+    })
+
+    if (!pessoa) {
+      throw new AppError("Login ou senha incorretos")
+    }
+
+    senha = await encriptar(senha);
+
+    const senhaValida = senha === pessoa[0].senha ? true : false
+
+    if (!senhaValida) {
+      throw new AppError("Login ou senha incorretos")
+    }
+
+    return ({ nome: pessoa.nome, login: pessoa.login })
+  }
+}
+
+async function encriptar(senha: string) {
+  return (senha + process.env.JWT_ACCESS_SECRET)
 }
