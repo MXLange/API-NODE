@@ -9,7 +9,6 @@ import { ufRepository } from "../repository/ufRepository";
 export class UfDAO {
 
   async criar({ sigla, nome, status }: ICadastrarUf): Promise<any> {
-
     const jaExisteSigla = await ufRepository.findOne({
       where: {
         sigla,
@@ -52,7 +51,6 @@ export class UfDAO {
   }
 
   async pesquisa(dados: any) {
-
     const resultado = await ufRepository.find({
       where: dados,
       order: {
@@ -60,15 +58,10 @@ export class UfDAO {
       }
     });
 
-    if (!resultado) {
-      throw new AppError("Não foi possível consultar UF no banco de dados.", 404);
-    }
-
     return resultado;
   }
 
   async alterar({ codigoUF, sigla, nome, status }: IAlterarUf) {
-
     const jaExisteSigla = await ufRepository.findOne({
       where: {
         sigla,
@@ -111,21 +104,22 @@ export class UfDAO {
 
     const retorno = await this.pesquisa({});
 
-    if (!retorno) throw new AppError("A UF foi atualizada, porém não conseguimos encontrar o retorno esperado.", 404);
+    if (!retorno) {
+      throw new AppError("A UF foi atualizada, porém não conseguimos encontrar o retorno esperado.", 404);
+    }
 
     return retorno;
 
   }
 
   async deletar(codigoUF: number) {
-
-    const existeUf = await ufRepository.find({
+    const existeUf = await ufRepository.findOne({
       where: {
         codigoUF,
       }
     });
 
-    if (existeUf.length === 0) {
+    if (!existeUf) {
       throw new AppError("Insira um código de UF válido.");
     }
 

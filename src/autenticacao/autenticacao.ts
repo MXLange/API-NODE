@@ -4,16 +4,16 @@ import AppError from "../shared/errors/AppErrors";
 
 
 export async function autenticar(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization
+  const token = req.headers.authorization;
 
   if (token === undefined) {
-    throw new AppError("Token inválido")
+    throw new AppError("Token inválido");
   }
 
-  const estaValido = await validarToken(token!)
-  console.log(estaValido)
+  const estaValido = await validarToken(token!);
+
   if (!estaValido) {
-    throw new AppError("Token inválido")
+    throw new AppError("Token inválido");
   }
 
   next()

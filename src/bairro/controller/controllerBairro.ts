@@ -71,11 +71,9 @@ export class ControllerBairro {
       return res.status(200).json({ mensagem: "Registro excluído com sucesso" });
     }
   }
-
 }
 
 function verificarParametrosPostBairro({ codigoMunicipio, nome, status }: ICadastrarBairro) {
-
   if (!codigoMunicipio) throw new AppError("Por favor insira um código de município.");
   if (!nome) throw new AppError("Por favor insira um nome.");
   if (!status) throw new AppError("Por favor insira um status.");
@@ -86,11 +84,9 @@ function verificarParametrosPostBairro({ codigoMunicipio, nome, status }: ICadas
 
   if (nome.length > 256) throw new AppError("O nome deve possuir até 256 caracteres");
   if (status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo");
-
 }
 
 function verificarParametrosPutBairro({ codigoBairro, codigoMunicipio, nome, status }: IAlterarBairro) {
-
   if (!codigoBairro) throw new AppError("Por favor insira uma código de bairro.");
   if (!codigoMunicipio) throw new AppError("Por favor insira um código de UF.");
   if (!nome) throw new AppError("Por favor insira um nome.");
@@ -103,5 +99,4 @@ function verificarParametrosPutBairro({ codigoBairro, codigoMunicipio, nome, sta
 
   if (nome && nome.length > 256) throw new AppError("A nome deve possuir até 60 caracteres");
   if (status && status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo");
-
 }

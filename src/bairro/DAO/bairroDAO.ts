@@ -40,7 +40,6 @@ export class BairroDAO {
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-
     const resultado: any = await bairroRepository.find({
       where: dados,
       relations: {
@@ -55,7 +54,7 @@ export class BairroDAO {
       item.codigoMunicipio = item.codigoMunicipio.codigoMunicipio;
     }
 
-    if (!resultado) {
+    if (resultado.length === 0) {
       throw new AppError("Não foi possível consultar o bairro no banco de dados.", 404);
     }
 
@@ -63,7 +62,6 @@ export class BairroDAO {
   }
 
   async alterar({ codigoBairro, codigoMunicipio, nome, status }: IAlterarBairro): Promise<Array<any>> {
-
     const queryRunner = AppDataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -119,8 +117,7 @@ export class BairroDAO {
   }
 
   async deletar(codigoBairro: number) {
-
-    const existeBairro = bairroRepository.find({
+    const existeBairro = await bairroRepository.findOne({
       where: {
         codigoBairro
       }
@@ -152,5 +149,4 @@ export class BairroDAO {
 
     return true
   }
-
 }

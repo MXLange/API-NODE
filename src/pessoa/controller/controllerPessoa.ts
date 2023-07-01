@@ -9,7 +9,6 @@ import { IAlterarPessoa, ICadastrarPessoa } from "../interfaces/interfacesPessoa
 export class ControllerPessoa {
 
   async cadastrar(req: Request, res: Response) {
-
     const { nome, sobrenome, idade, login, senha, status, enderecos } = req.body;
 
     verificarParametrosPostPessoa({ nome, sobrenome, idade, login, senha, status, enderecos });
@@ -22,7 +21,6 @@ export class ControllerPessoa {
   }
 
   async buscar(req: Request, res: Response) {
-
     const { codigoPessoa, login, status } = req.query;
 
     let pesquisar: any = {
@@ -43,7 +41,6 @@ export class ControllerPessoa {
   }
 
   async atualizar(req: Request, res: Response) {
-
     const { codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos } = req.body;
 
     verificarParametrosPutPessoa({ codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos });
@@ -56,7 +53,6 @@ export class ControllerPessoa {
   }
 
   async deletar(req: Request, res: Response) {
-
     const { codigoPessoa } = req.params;
 
     const codigo = Number(codigoPessoa);
@@ -71,7 +67,6 @@ export class ControllerPessoa {
   }
 
   async login(req: Request, res: Response) {
-
     const { login, senha } = req.body;
 
     const pessoaDAO = new PessoaDAO();
@@ -85,7 +80,6 @@ export class ControllerPessoa {
 }
 
 function verificarParametrosPutPessoa({ codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos }: IAlterarPessoa) {
-
   if (!codigoPessoa) throw new AppError("Por favor insira um código de pessoa válido.");
   if (!nome) throw new AppError("Por favor insira um nome válido.");
   if (!sobrenome) throw new AppError("Por favor insira um sobrenome válido.");
@@ -113,7 +107,6 @@ function verificarParametrosPutPessoa({ codigoPessoa, nome, sobrenome, idade, lo
 }
 
 function verificarParametrosPostPessoa({ nome, sobrenome, idade, login, senha, status, enderecos }: ICadastrarPessoa) {
-
   if (!nome) throw new AppError("Por favor insira um nome válido.");
   if (!sobrenome) throw new AppError("Por favor insira um sobrenome válido.");
   if (!idade) throw new AppError("Por favor insira uma idade válida.");
@@ -138,7 +131,6 @@ function verificarParametrosPostPessoa({ nome, sobrenome, idade, login, senha, s
 }
 
 function verificarEnderecos(enderecos: Array<any>) {
-
   let num: number = 0;
 
   for (let endereco of enderecos) {
@@ -180,6 +172,5 @@ export async function validarToken(barerToken: string): Promise<boolean> {
       throw new AppError("Token inválido")
     }
   });
-  console.log(pessoa)
   return true;
 }

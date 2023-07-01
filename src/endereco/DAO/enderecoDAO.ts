@@ -7,8 +7,7 @@ import { enderecoRepository } from "../repository/enderecoRepository";
 export class EnderecoDAO {
 
   async criar({ codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep }: ICadastrarEndereco): Promise<any> {
-
-    const existeBairro = await bairroRepository.find({
+    const existeBairro = await bairroRepository.findOne({
       where: {
         codigoBairro,
       }
@@ -38,12 +37,10 @@ export class EnderecoDAO {
   }
 
   async deletarVarios(enderecos: Array<number>) {
-
     await enderecoRepository.delete(enderecos);
   }
 
   async alterar({ codigoEndereco, codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep }: IAlterarEndereco): Promise<void> {
-
     let endereco: any = await enderecoRepository.findOne({
       where: {
         codigoEndereco,
@@ -65,10 +62,8 @@ export class EnderecoDAO {
   }
 
   async alterarVarios(enderecos: Array<any>) {
-
     for (let endereco of enderecos) {
       let { codigoEndereco, nomeRua, numero, complemento, cep, codigoBairro, codigoPessoa } = endereco;
-
       await this.alterar({ codigoEndereco, codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep });
     }
   }

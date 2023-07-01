@@ -8,7 +8,6 @@ import { pessoaRepository } from "../repository/pessoaRepository";
 
 export class PessoaDAO {
 
-  //login unico
   async criar({ nome, sobrenome, idade, login, senha, status, enderecos }: ICadastrarPessoa): Promise<any> {
     const existeLogin = await pessoaRepository.findOne({
       where: {
@@ -30,8 +29,9 @@ export class PessoaDAO {
 
     await queryRunner.release();
 
-    if (!resultado) throw new AppError("Não foi possível incluir esse cadastro no banco de dados.", 404);
-
+    if (!resultado) {
+      throw new AppError("Não foi possível incluir esse cadastro no banco de dados.", 404);
+    }
 
     let codigoPessoa: any = await pessoaRepository.find({
       order: {
@@ -62,7 +62,6 @@ export class PessoaDAO {
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-
     const { codigoPessoa, login, status } = dados;
 
     let resultado: any;
@@ -121,7 +120,6 @@ export class PessoaDAO {
   }
 
   async alterar({ codigoPessoa, nome, sobrenome, idade, login, senha, status, enderecos }: IAlterarPessoa): Promise<Array<any>> {
-
     const loginJaExiste = await pessoaRepository.findOne({
       where: {
         login,
@@ -138,7 +136,11 @@ export class PessoaDAO {
       }
     });
 
-    if (!pessoa) throw new AppError("Por favor insira um código de pessoa válido.");
+    if (!pessoa) {
+      throw new AppError("Por favor insira um código de pessoa válido.");
+    }
+
+    senha = await encriptar(senha);
 
     pessoa.nome = nome;
     pessoa.sobrenome = sobrenome;
@@ -169,18 +171,15 @@ export class PessoaDAO {
     let controle: Array<any> = [];
 
     for (let endereco of enderecos) {
-
       if (endereco.codigoEndereco === undefined) {
         enderecosParaIncluir.push(endereco);
       } else {
         controle[endereco.codigoEndereco] = 1;
         enderecosParaAlterar.push(endereco);
       }
-
     }
 
     for (let endereco of enderecosAtuais) {
-
       if (controle[endereco.codigoEndereco] !== 1) {
         enderecosParaDeletar.push(endereco.codigoEndereco);
       }
@@ -194,7 +193,6 @@ export class PessoaDAO {
     }
 
     if (enderecosParaIncluir.length > 0) {
-
       for (let endereco of enderecosParaIncluir) {
 
         let { codigoPessoa, codigoBairro, nomeRua, numero, complemento, cep } = endereco;
@@ -214,15 +212,14 @@ export class PessoaDAO {
   }
 
   async deletar(codigoPessoa: number) {
-
-    const existePessoa = pessoaRepository.find({
+    const existePessoa = await pessoaRepository.findOne({
       where: {
         codigoPessoa,
       }
     });
 
     if (!existePessoa) {
-      throw new AppError("Insira um código de município válido.");
+      throw new AppError("Insira um código de pessoa válido.");
     }
 
     const queryRunner = AppDataSource.createQueryRunner();
@@ -249,8 +246,7 @@ export class PessoaDAO {
   }
 
   async login({ login, senha }: ILogin) {
-
-    const pessoa: any = await pessoaRepository.find({
+    const pessoa: any = await pessoaRepository.findOne({
       where: {
         login,
       }
@@ -259,10 +255,9 @@ export class PessoaDAO {
     if (!pessoa) {
       throw new AppError("Login ou senha incorretos");
     }
-
     senha = await encriptar(senha);
 
-    const senhaValida = senha === pessoa[0].senha ? true : false;
+    const senhaValida = senha === pessoa.senha ? true : false;
 
     if (!senhaValida) {
       throw new AppError("Login ou senha incorretos");
@@ -273,6 +268,5 @@ export class PessoaDAO {
 }
 
 async function encriptar(senha: string) {
-
   return (senha + process.env.JWT_ACCESS_SECRET);
 }

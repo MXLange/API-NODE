@@ -9,7 +9,6 @@ import { municipioRepository } from "../repository/municipioRepository";
 export class MunicipioDAO {
 
   async criar({ codigoUF, nome, status }: ICadastrarMunicipio): Promise<any> {
-
     const existeUf = await ufRepository.findOne({
       where: {
         codigoUF,
@@ -40,13 +39,14 @@ export class MunicipioDAO {
 
     const retorno = await this.pesquisa({});
 
-    if (!retorno) throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado");
+    if (!retorno) {
+      throw new AppError("O município foi cadastrado, mas não foi possível encontrar o retorno esperado");
+    }
 
     return retorno;
   }
 
   async pesquisa(dados: any): Promise<Array<any>> {
-
     const resultado: any = await municipioRepository.find({
       where: dados,
       relations: {
@@ -69,7 +69,6 @@ export class MunicipioDAO {
   }
 
   async alterar({ codigoMunicipio, codigoUF, nome, status }: IAlterarMunicipio): Promise<Array<any>> {
-
     const queryRunner = AppDataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -121,8 +120,7 @@ export class MunicipioDAO {
   }
 
   async deletar(codigoMunicipio: number) {
-
-    const existeMunicipio = municipioRepository.find({
+    const existeMunicipio = await municipioRepository.findOne({
       where: {
         codigoMunicipio,
       }

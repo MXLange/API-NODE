@@ -6,7 +6,6 @@ import { IAlterarMunicipio, ICadastrarMunicipio } from "../interfaces/interfaces
 
 
 export class ControllerMunicipio {
-
   async cadastrar(req: Request, res: Response) {
 
     const { codigoUF, nome, status } = req.body;
@@ -21,7 +20,6 @@ export class ControllerMunicipio {
   }
 
   async buscar(req: Request, res: Response) {
-
     const { codigoMunicipio, codigoUF, nome, status } = req.query;
 
     let pesquisar: any = {
@@ -52,7 +50,6 @@ export class ControllerMunicipio {
   }
 
   async atualizar(req: Request, res: Response) {
-
     const { codigoMunicipio, codigoUF, nome, status } = req.body;
 
     verificarParametrosPutMunicipio({ codigoMunicipio, codigoUF, nome, status });
@@ -65,7 +62,6 @@ export class ControllerMunicipio {
   }
 
   async deletar(req: Request, res: Response) {
-
     const { codigoMunicipio } = req.params;
 
     const codigo = Number(codigoMunicipio);
@@ -78,11 +74,9 @@ export class ControllerMunicipio {
       return res.status(200).json({ mensagem: "Registro excluído com sucesso" });
     }
   }
-
 }
 
 function verificarParametrosPostMunicipio({ codigoUF, nome, status }: ICadastrarMunicipio) {
-
   if (!codigoUF) throw new AppError("Por favor insira um código UF.");
   if (!nome) throw new AppError("Por favor insira um nome.");
   if (!status) throw new AppError("Por favor insira um status.");
@@ -96,7 +90,6 @@ function verificarParametrosPostMunicipio({ codigoUF, nome, status }: ICadastrar
 }
 
 function verificarParametrosPutMunicipio({ codigoMunicipio, codigoUF, nome, status }: IAlterarMunicipio) {
-
   if (!codigoMunicipio) throw new AppError("Por favor insira uma código de municipio.");
   if (!codigoUF) throw new AppError("Por favor insira um código de UF.");
   if (!nome) throw new AppError("Por favor insira um nome.");

@@ -19,5 +19,4 @@ export async function errorMiddleware(error: Error, req: Request, res: Response,
     mensagem: "Erro interno do servidor",
     status: 500,
   });
-
 }

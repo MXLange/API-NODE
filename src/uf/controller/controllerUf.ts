@@ -8,7 +8,6 @@ import { IAlterarUf, ICadastrarUf } from "../interfaces/interfacesUf";
 export class ControllerUf {
 
   async cadastrar(req: Request, res: Response) {
-
     const { sigla, nome, status } = req.body;
 
     verificarParametrosPostUf({ sigla, nome, status });
@@ -22,7 +21,6 @@ export class ControllerUf {
   }
 
   async buscar(req: Request, res: Response) {
-
     const { codigoUF, sigla, nome, status } = req.query;
 
     let pesquisar: any = {
@@ -58,7 +56,6 @@ export class ControllerUf {
   }
 
   async atualizar(req: Request, res: Response) {
-
     const { codigoUF, sigla, nome, status } = req.body;
 
     verificarParametrosPutUf({ codigoUF, sigla, nome, status });
@@ -72,7 +69,6 @@ export class ControllerUf {
   }
 
   async deletar(req: Request, res: Response) {
-
     const { codigoUF } = req.params;
 
     const codigo = Number(codigoUF);
@@ -89,7 +85,6 @@ export class ControllerUf {
 }
 
 function verificarParametrosPostUf({ sigla, nome, status }: ICadastrarUf) {
-
   if (!sigla) throw new AppError("Por favor insira uma sigla, campo obrigatório.");
   if (!nome) throw new AppError("Por favor insira um nome, campo obrigatório.");
   if (!status) throw new AppError("Por favor insira um status, campo obrigatório.");
@@ -101,11 +96,9 @@ function verificarParametrosPostUf({ sigla, nome, status }: ICadastrarUf) {
   if (sigla.length > 3) throw new AppError("A sigla deve possuir até 3 caracteres");
   if (nome.length > 60) throw new AppError("O nome deve possuir até 60 caracteres");
   if (status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo");
-
 }
 
 function verificarParametrosPutUf({ codigoUF, sigla, nome, status }: IAlterarUf) {
-
   if (!codigoUF) throw new AppError("Por favor insira uma código de UF.");
   if (!sigla) throw new AppError("Por favor insira uma sigla.");
   if (!nome) throw new AppError("Por favor insira um nome.");
@@ -119,5 +112,4 @@ function verificarParametrosPutUf({ codigoUF, sigla, nome, status }: IAlterarUf)
   if (sigla && sigla.length > 3) throw new AppError("A sigla deve possuir até 3 caracteres");
   if (nome && nome.length > 60) throw new AppError("A nome deve possuir até 60 caracteres");
   if (status && status !== 1 && status !== 2) throw new AppError("Insira status 1 para ativo ou 2 para inativo");
-
 }
